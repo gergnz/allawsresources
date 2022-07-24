@@ -5,7 +5,7 @@ import json
 import logging
 import boto3
 from sqs_polling import sqs_polling
-from start_task import start_task
+import resource_scan
 
 logging.basicConfig(level=logging.INFO)
 
@@ -22,35 +22,7 @@ def msg_callback(message):
     msg.pop('type')
 
     if msg_type == 'resources':
-        msg['tasktype'] = 'resources'
-        msg['cpu'] = '4096'
-        msg['memory'] = '8192'
-        msg['command'] = './resource_scan.py'
-        return start_task(msg)
-
-    if msg_type == 'deployconfig':
-        msg['tasktype'] = 'deployconfig'
-        msg['command'] = './deploy_config.py'
-        return start_task(msg)
-
-    if msg_type == 'setupsns':
-        msg['tasktype'] = 'setupsns'
-        msg['command'] = './setupsns.py'
-        return start_task(msg)
-
-    if msg_type == 'deploysecurityhub':
-        msg['tasktype'] = 'deploysecurityhub'
-        msg['command'] = './enable_securityhub.py'
-        return start_task(msg)
-
-    if msg_type == 'deploysharr':
-        msg['tasktype'] = 'deploysharr'
-        msg['command'] = './deploy_sharr.py'
-        return start_task(msg)
-
-    if msg_type == 'cleanaccount':
-        msg['tasktype'] = 'cleanaccount'
-        return start_task(msg)
+        resource_scan.do_main(msg['organisation'])
 
     logging.info("unknow message type %s, do nothing.", msg_type)
     return True

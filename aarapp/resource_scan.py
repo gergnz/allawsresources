@@ -207,9 +207,10 @@ def get_accounts(details):
 
     return active_accounts
 
-if __name__ == "__main__":
+def do_main(organisation):
+    """the main function to call"""
     scan_details = scan_resources({
-        'organisation': os.environ.get('ORGANISATION')
+        'organisation': organisation
     })
 
     accounts_to_scan = get_accounts(scan_details)
@@ -246,3 +247,6 @@ if __name__ == "__main__":
         }
         logging.info("Now scanning account: %s", k)
         runscan(scan_details, tmpconfig)
+
+if __name__ == "__main__":
+    do_main(os.environ.get('ORGANISATION'))
