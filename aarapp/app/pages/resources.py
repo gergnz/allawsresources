@@ -15,13 +15,14 @@ class TagTable(Table): #pylint: disable=abstract-method
     table_id = 'tagstable'
 
 class ItemTable(Table): #pylint: disable=abstract-method
-    arn = Col('ARN')
     accountid = Col('AccountID')
+    id = Col('Id')
     resourcetype = Col('Resource Type')
     created = Col('Created At')
     region = Col('Region')
     service = Col('Service')
-    tags = NestedTableCol('tags', TagTable)
+    name = Col('Name')
+    #tags = NestedTableCol('tags', TagTable)
     classes = ['table', 'table-striped', 'table-bordered']
     html_attrs = dict(cellspacing='0', width='100%')
     table_id = 'allawsresources'
@@ -70,20 +71,23 @@ def resources():
     my_resources = ress.query(all_organisations[0])
 
     for resource in my_resources:
-        tags = []
-        print(resource.arn)
-        for k in resource.tags:
-            tags.append({'key': k, 'value': resource.tags[k]})
-        print("################################################################")
+        #tags = []
+        #for k in resource.tags:
+        #    tags.append({'key': k, 'value': resource.tags[k]})
+        if 'Name' in resource.tags:
+            name = resource.tags['Name']
+        else:
+            name = ''
 
         allitems.append({
-            'arn': resource.arn,
             'accountid': resource.accountid,
+            'id': resource.id,
             'resourcetype': resource.resourcetype,
             'created': resource.created,
             'region': resource.region,
             'service': resource.service,
-            'tags': tags
+            'name': name
+        #    'tags': tags
         })
 
     table = ItemTable(allitems)
