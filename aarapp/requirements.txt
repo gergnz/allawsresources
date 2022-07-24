@@ -8,3 +8,5 @@ uwsgi==2.0.20
 flask-talisman
 flask-seasurf
 pynamodb
+sqs-polling
+skew @ git+ssh://git@github.com/gergnz/skew.git
