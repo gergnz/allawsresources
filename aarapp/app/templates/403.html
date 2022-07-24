@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+{% include 'header.html' %}
+    <link href="{{ url_for('static', filename='css/index.css') }}" rel="stylesheet">
+    <title>Forbidden</title>
+  </head>
+  <body>
+    <div class="content">
+      <div class="container">
+        <div class="row">
+          <div class="col-sm">
+          </div>
+          <div class="col-sm">
+            <div class="p-5">
+              <img src="{{ url_for('static', filename='aar_logo_with_text.png') }}" alt="All AWS Resources" height="300">
+            </div>
+          </div>
+          <div class="col-sm">
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <h1 class="display-6 text-center text-light">
+              {{ error }}
+            </h1>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer class="footer bg-customblack text-lg-start">
+      <div class="text-light text-center p-3 copyright">
+        © 2021 Copyright:
+        <a class="text-light" href="https:/www.performancemagic.com/">www.performancemagic.com</a>
+      </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  </body>
+</html>

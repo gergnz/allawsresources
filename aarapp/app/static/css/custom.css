@@ -1,0 +1,233 @@
+main > .container {
+  padding: 0px 0px 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+.content {
+  flex: 1 0 auto;
+}
+.footer {
+  flex-shrink: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
+
+.orange:hover, 
+.orange:focus, 
+.orange:active, 
+.orange {
+  color: #FF6700; 
+  text-decoration: none;
+}
+
+.lowercase {
+  text-transform: lowercase;
+}
+
+.bg-customblack {
+    background-color: #000;
+}
+
+.text-huge {
+  font-size: 100px;
+}
+
+.actions {
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.bigfont {
+  font-size: 2rem;
+}
+
+.copyright {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.hidden {
+  display: none;
+}
+
+#pswd_info {
+    width:420px;
+    padding:10px;
+    background:#fefefe;
+    font-size:.875em;
+    border-radius:5px;
+    box-shadow:0 1px 3px #ccc;
+    border:1px solid #ddd;
+    display: none;
+}
+
+.invalid {
+    color:#ec3f41;
+}
+.valid {
+    color:#3a7d34;
+}
+
+.outer {
+  position: relative;
+  width: 300px;
+  height: 200px;
+}
+canvas {
+  position: absolute;
+}
+.percent {
+ position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
+    font-size: 50px;
+    bottom: 0;
+}
+
+.whitelink {
+  color: #fff !important;
+  text-decoration: none;
+}
+
+
+.btn-outline-orange {
+  color: #FF6700;
+  border-color: #FF6700;
+  font-size: 1.3em;
+}
+.btn-outline-orange:hover {
+  color: #fff;
+  background-color: #FF6700;
+  border-color: #fff;
+}
+.btn-check:focus + .btn-outline-orange, .btn-outline-orange:focus {
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.5);
+}
+.btn-check:checked + .btn-outline-orange, .btn-check:active + .btn-outline-orange, .btn-outline-orange:active, .btn-outline-orange.active, .btn-outline-orange.dropdown-toggle.show {
+  color: #fff;
+  background-color: #FF6700;
+  border-color: #FF6700;
+}
+.btn-check:checked + .btn-outline-orange:focus, .btn-check:active + .btn-outline-orange:focus, .btn-outline-orange:active:focus, .btn-outline-orange.active:focus, .btn-outline-orange.dropdown-toggle.show:focus {
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.5);
+}
+.btn-outline-orange:disabled, .btn-outline-orange.disabled {
+  color: #FF6700;
+  background-color: transparent;
+}
+
+.btn-modal {
+  font-size: 1em !important;
+}
+
+.btn-orange {
+  color: #fff;
+  background-color: #FF6700;
+  border-color: #FF6700;
+  font-size: 1.3em;
+}
+.btn-orange:hover {
+  color: #fff;
+  background-color: #FF6700;
+  border-color: #fff;
+}
+.btn-check:focus + .btn-orange, .btn-orange:focus {
+  color: #fff;
+  background-color: #FF6700;
+  border-color: #FF6700;
+  box-shadow: 0 0 0 0.25rem rgba(66, 70, 73, 0.5);
+}
+.btn-check:checked + .btn-orange, .btn-check:active + .btn-orange, .btn-orange:active, .btn-orange.active, .show > .btn-orange.dropdown-toggle {
+  color: #fff;
+  background-color: #FF6700;
+  border-color: #fff;
+}
+.btn-check:checked + .btn-orange:focus, .btn-check:active + .btn-orange:focus, .btn-orange:active:focus, .btn-orange.active:focus, .show > .btn-orange.dropdown-toggle:focus {
+  box-shadow: 0 0 0 0.25rem rgba(66, 70, 73, 0.5);
+}
+.btn-orange:disabled, .btn-orange.disabled {
+  color: #fff;
+  background-color: #FF6700;
+  border-color: #FF6700;
+}
+
+.or-text-center {
+  display: flex;
+  justify-content: center;
+}
+
+.btn-circle {
+  word-wrap:break-word;
+}
+
+td.details-control {
+    cursor: pointer;
+}
+
+.switch-label {
+  font-size: xx-small;
+  color: #A6A6A6;
+}
+
+.text-passed {
+  color : #578B46;
+}
+
+.text-failed {
+  color : #D13212;
+}
+
+.text-critical {
+  color : #7C2004;
+}
+
+.text-high {
+  color : #BA2E10;
+}
+
+.text-medium {
+  color : #CC5F22;
+}
+
+.text-low {
+  color : #B49115;
+}
+
+.form-switch {
+  padding-left: 0px;
+  display: flex;
+  justify-content: center;
+}
+
+.form-check {
+  padding-left: 0px;
+  margin-bottom: 0px;
+}
+
+.form-switch .form-check-input {
+  margin-left: 0px;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%280, 0, 0, 1%29'/%3e%3c/svg%3e");
+}
+
+.form-check-input {
+  border-color: black;
+  color: black;
+}
+
+.form-check-input:checked {
+  background-color : #578B46;
+  border-color: #578B46;
+}
+
+.label-buttons {
+  width: 100px;
+}
+
+.label-two-buttons {
+  width: 150px;
+}

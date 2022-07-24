@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+{% include 'header.html' %}
+    <title>Resources</title>
+  </head>
+  <body>
+{% include 'nav.html' %}
+    <div class="container">
+      <div class="py-5">
+        <h1 class="display-5 text-black">Resources</h1>
+      </div>
+    </div>
+    <hr>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-lg">
+          <form method='post'>
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div>
+              <label for="organisation">AWS Organisation:</label>
+              <select id="organisation" name="organisation">
+                {% for item in all_organisations %}
+                <option value="{{ item }}">{{ item }}</option>
+                {% endfor %}
+              </select>
+              <input class="btn-primary btn" type="submit" value="Start Scan">
+            </div>
+          </form>
+        </div>
+        <div class="col">
+          <a href="#"><i class="bi bi-arrow-repeat primary h1 float-end" id="refresh"></i></a>
+        </div>
+      </div>
+    </div>
+    <hr>
+    <div class="py-5 px-3 container-fluid small">
+      {{ allitems|safe }}
+    </div>
+{% include 'footer.html' %}
+  </body>
+</html>

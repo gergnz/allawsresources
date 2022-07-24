@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  {% include 'header.html' %}
+  <title>AWS Organisations</title>
+</head>
+
+<body>
+  {% include 'nav.html' %}
+  <div class="container">
+    <div class="py-5">
+      <h1 class="display-5 text-black">AWS Organisations</h1>
+    </div>
+    <br>
+    <hr>
+    <h2 class="display-10 fw-bold">Connected AWS Organisations</h2>
+    <br>
+    <div class="container">
+      {{ actstable|safe }}
+    </div>
+    <br>
+    <h2 class="display-10 fw-bold">Connect an AWS Organisation</h2>
+    <form action="/addaws" method='post'>
+      <input type="hidden" id="csrf" name="_csrf_token" value="{{ csrf_token() }}">
+      <div class="row mb-3 bg-light border">
+        <div class="col">
+          <div class="p-1 row">
+            <div class="col-sm">
+              <h3 class="display-10 fw-bold">New AWS Organisation & Scan Role</h3>
+            </div>
+          </div>
+          <div class="p-1 row">
+            <div class="col-sm">
+              <div><label for="organisation">AWS Organisation Name:</label></div>
+              <div><input type="text" id="organisation" name="organisation" size="50" placeholder="My Organisation">
+              </div>
+            </div>
+            <div class="col-sm">
+              <div><label for="externalid">External ID:</label></div>
+              <div><input type="text" id="externalid" name="externalid" size="50"
+                  placeholder"218EE9D3-312A-45BD-82EA-E9E82FB2341F"></div>
+            </div>
+          </div>
+          <div class="p-1 row">
+            <div class="col-sm">
+              <div><label for="stsrole">STS Role ARN:</label></div>
+              <div><input type="text" id="stsrole" name="stsrole" size="50"
+                  placeholder="arn:aws:iam::123456789012:role/myrole"></div>
+            </div>
+            <div class="col-sm">
+              <div><label for="scanrole">Scan Role Name:</label></div>
+              <div><input type="text" id="scanrole" name="scanrole" size="50"
+                  placeholder="role/scanrole"></div>
+            </div>
+          </div>
+          <hr>
+          <div class="p-1 row">
+            <div class="col-sm">
+              <div><button id="create" class="btn btn-primary">Save Organisation</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel">Delete AWS Organisation</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Are you sure ?
+          </div>
+          <input type="text" name="organisation" id="delete-organisation" value="" hidden />
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-modal" data-bs-dismiss="modal">CANCEL</button>
+            <button type="button" id="deleteModalBtn" class="btn-primary btn btn-modal">YES</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% include 'footer.html' %}
+</body>
+
+</html>

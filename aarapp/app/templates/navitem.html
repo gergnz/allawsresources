@@ -1,0 +1,5 @@
+{% macro navitem(path, name) -%}
+  <li class="nav-item">
+    <a class="nav-link{% if path == request.path %} active {% endif %}" href="{{path}}">{{name}}</a>
+  </li>
+{%- endmacro %}
