@@ -215,9 +215,9 @@ class AllresourcesStack(Stack):
 
         # ECS Cluster -> Task Definition -> Container
         container = task_definition.add_container(
-            id='hspt-aar-container',
+            id=f'{resource_prefix}-aar-container',
             image=ecs.ContainerImage.from_registry(f'{ecr_repository.repository_uri}:latest'),
-            container_name='hspt-aar-container',
+            container_name=f'{resource_prefix}-aar-container',
             working_directory='/srv',
             entry_point=["supervisord","-c","/srv/supervisor.conf"],
             environment={
