@@ -9,4 +9,5 @@ flask-talisman
 flask-seasurf
 pynamodb
 sqs-polling
-skew @ git+ssh://git@github.com/gergnz/skew.git
+skew @ git+https://github.com/gergnz/skew.git
+
