@@ -1,6 +1,5 @@
 from aws_cdk import (
     Stack,
-    Duration,
     aws_kms as kms,
     aws_sqs as sqs,
     aws_ecs as ecs,
@@ -12,9 +11,9 @@ from aws_cdk import (
     aws_route53 as r53,
     aws_dynamodb as dynamodb,
     aws_certificatemanager as acm,
-    aws_route53_targets as r53targets,
     aws_elasticloadbalancingv2 as elbv2,
-    aws_secretsmanager as secretsmanager
+    aws_secretsmanager as secretsmanager,
+    aws_ecs_patterns as ecs_patterns
 )
 
 from constructs import Construct
@@ -45,19 +44,25 @@ class AllresourcesStack(Stack):
         region = Stack.of(self).region
         resource_prefix = config['resource_prefix']
 
-        # Create KMS Key
+        # KMS -> Create Key
         allawsresources_key = self.create_kms_key(f'{resource_prefix}/aar')
         
-        # Lookup ECR Repository
+        # ECR -> Repository Lookup
         ecr_repository = ecr.Repository.from_repository_name(
             self,
             id=f'{resource_prefix}-aar',
             repository_name=config['ecr']['repository_name']
         )
 
-        # DynamoDB 
-
-        ## Accounts Table
+        # R53 -> Hosted Zone Lookup
+        hosted_zone = r53.HostedZone.from_hosted_zone_attributes(
+            self,
+            id=f'{resource_prefix}-hosted-zone-lookup',
+            hosted_zone_id=config['route53']['hosted_zone_id'],
+            zone_name=config['route53']['hosted_zone_name']
+        )
+           
+        # DynamoDB -> Create Accounts Table
         accounts_table = self.create_dynamodb_table(
             name=f'{resource_prefix}-aar-acc-table',
             partition_key=dynamodb.Attribute(
@@ -66,7 +71,7 @@ class AllresourcesStack(Stack):
             encryption_key=allawsresources_key
         )
 
-        ## Resources Table
+        # DynamoDB -> Create Resources Table
         resources_table = self.create_dynamodb_table(
             name=f'{resource_prefix}-aar-rec-table',
             partition_key=dynamodb.Attribute(
@@ -80,7 +85,7 @@ class AllresourcesStack(Stack):
             encryption_key=allawsresources_key
         )
 
-        # SQS Queue
+        # SQS -> Create Queue
         sqs_queue = sqs.Queue(
             self, 
             id=f'{resource_prefix}-aar-resource-sqs',
@@ -89,7 +94,7 @@ class AllresourcesStack(Stack):
             encryption_master_key=allawsresources_key
         )
 
-        # Secrets Manager Repository
+        # Secrets Manager -> Create Secret
         secret = secretsmanager.Secret(
             self,
             id=f'{resource_prefix}-aar/ecs',
@@ -97,13 +102,14 @@ class AllresourcesStack(Stack):
             encryption_key=allawsresources_key
         )
 
+        # Secrets Manager -> Secret Lookup
         ecs_secrets = secretsmanager.Secret.from_secret_name_v2(
             self, 
-            id="resource-secret-lookup", 
+            id=f'{resource_prefix}-secret-lookup', 
             secret_name=secret.secret_name
         )
 
-        # VPC Lookup
+        # VPC -> VPC Lookup
         vpc = ec2.Vpc.from_lookup(
             self,
             id=f'{resource_prefix}-vpc',
@@ -113,22 +119,22 @@ class AllresourcesStack(Stack):
             ),
         )
 
-        # ECS Cluster
-        cluster = ecs.Cluster(
-            self, 
-            id=f'{resource_prefix}-aar-cluster', 
-            vpc=vpc, 
-            cluster_name=f'{resource_prefix}-aar-cluster'
+        # CloudWatch -> Log Group Lookup
+        log_group = logs.LogGroup.from_log_group_name(
+            self,
+            id=f'{resource_prefix}-aar-ecs-log-group-lookup',
+            log_group_name=f'{resource_prefix}-aar-ecs'
         )
 
-        ## ECS Cluster -> Execution Role
+        # IAM -> Create Execution Role
         execution_role = iam.Role(
             self, 
             id=f'{resource_prefix}-aar-ecs-execution-role',
             assumed_by=iam.ServicePrincipal("ecs-tasks"),
             role_name=f'{resource_prefix}-aar-ecs-execution-role'
         )
-        # ECS Cluster -> Execution Role -> Execution Role Policy
+
+        # IAM -> Create Execution Role Policy
         execution_role_policy = iam.Policy(
             self,
             id=f'{resource_prefix}-aar-ecs-execution-policy',
@@ -150,7 +156,7 @@ class AllresourcesStack(Stack):
 
         execution_role_policy.attach_to_role(execution_role)
 
-        # ECS Cluster -> Task Role
+        # IAM -> Create Task Role
         task_role = iam.Role(
             self, 
             id=f'{resource_prefix}-aar-ecs-task-role',
@@ -158,7 +164,7 @@ class AllresourcesStack(Stack):
             role_name=f'{resource_prefix}-aar-ecs-task-role'
         )
 
-        # ECS Cluster -> Task Role -> Task Role Policy
+        # IAM -> Create Task Role Policy
         task_role_policy = iam.Policy(
             self,
             id=f'{resource_prefix}-aar-ecs-task-policy',
@@ -189,7 +195,16 @@ class AllresourcesStack(Stack):
 
         task_role_policy.attach_to_role(task_role)
 
-        # ECS Cluster -> Task Definition
+
+        # ECS -> Create Cluster
+        cluster = ecs.Cluster(
+            self, 
+            id=f'{resource_prefix}-aar-cluster', 
+            vpc=vpc, 
+            cluster_name=f'{resource_prefix}-aar-cluster'
+        )
+
+        # ECS -> Create Task Definition
         task_definition = ecs.FargateTaskDefinition(
             self,
             id=f'{resource_prefix}-aar-fargate-td',
@@ -197,23 +212,19 @@ class AllresourcesStack(Stack):
             cpu=2048,
             task_role=task_role,
             execution_role=execution_role,
-            family=f'{resource_prefix}-aar-fargate-td'
+            family=f'{resource_prefix}-aar-fargate-td',
+            runtime_platform=ecs.RuntimePlatform(
+                operating_system_family=ecs.OperatingSystemFamily.LINUX,
+                cpu_architecture=ecs.CpuArchitecture.ARM64
+            )
         )
 
         # Secrets Manager -> Secret Retrieval
         secrets = {}
         for secret in config['secrets']['variables']:
             secrets[secret] = ecs.Secret.from_secrets_manager(ecs_secrets, secret)
-        
-        # Log Group Lookup
-        log_group = logs.LogGroup(
-            self, 
-            id=f'{resource_prefix}-aar-ecs-log-group-lookup',
-            log_group_name=f'{resource_prefix}-aar-ecs',
-            retention=logs.RetentionDays.ONE_MONTH
-        )
-
-        # ECS Cluster -> Task Definition -> Container
+            
+        # ECS -> Task Definition -> Container
         container = task_definition.add_container(
             id=f'{resource_prefix}-aar-container',
             image=ecs.ContainerImage.from_registry(f'{ecr_repository.repository_uri}:latest'),
@@ -234,7 +245,7 @@ class AllresourcesStack(Stack):
             ),
         )
       
-        # Container Port Mappings
+        # Container -> Port Mappings
         container.add_port_mappings(
             ecs.PortMapping(
                 container_port=5000,
@@ -242,131 +253,45 @@ class AllresourcesStack(Stack):
                 protocol=ecs.Protocol.TCP,
             )
         )
-
-        # ECS Cluster -> Security Group
-        ecs_security_group = ec2.SecurityGroup(
-            self,
-            id=f'{resource_prefix}-aar-fargate-sg',
-            vpc=vpc,
-            description="Security Group for allawsresources Fargate Cluster",
-            security_group_name=f'{resource_prefix}-aar-fargate-sg'
-        )
-
-        # ECS Cluster -> Fargate Service
-        service = ecs.FargateService(
+        
+        # ECS -> Cluster -> Fargate Service
+        #
+        # Note: Using ecs.FargateTaskDefinition instead of ApplicationLoadBalancedTaskImageOptions
+        #       as the following options are currently missing:
+        #
+        #       * Unable to define working directory and entry point
+        #       * Unable to specify container runetime platform
+        #
+        fargate_service = ecs_patterns.ApplicationLoadBalancedFargateService(
             self,
             id=f'{resource_prefix}-aar-service',
             cluster=cluster,
-            task_definition=task_definition,
-            security_groups=[ecs_security_group],
             service_name=f'{resource_prefix}-aar-service',
-            desired_count=1,
-            enable_execute_command=True,
-            assign_public_ip=False
-        )
-
-        hosted_zone = r53.HostedZone.from_hosted_zone_attributes(
-            self,
-            id="hosted-zone-lookup",
-            hosted_zone_id=config['route53']['hosted_zone_id'],
-            zone_name=config['route53']['hosted_zone_name']
-        )
-            
-        listener_certificate = acm.Certificate(
-            self,
-            id=f'{resource_prefix}-aar-certificate',
-            domain_name=config['route53']['domain'],
-            validation=acm.CertificateValidation.from_dns(
-                hosted_zone=hosted_zone
-            )
-        )
-        
-        load_balancer_security_group = ec2.SecurityGroup(
-            self,
-            id=f'{resource_prefix}-aar-alb-sg',
-            vpc=vpc,
-            description="Security Group for allawsresources Fargate Cluster",
-            security_group_name=f'{resource_prefix}-aar-alb-sg'
-        )
-
-        load_balancer_security_group.add_ingress_rule(
-            peer=ec2.Peer.any_ipv4(),
-            connection=ec2.Port.tcp(5000)
-        )
-
-        ecs_security_group.add_ingress_rule(
-            peer=ec2.Peer.security_group_id(load_balancer_security_group.security_group_id),
-            connection=ec2.Port.tcp(5000)
-        )
-
-        internal_load_balancer = elbv2.ApplicationLoadBalancer(self, 
-            id=f'{resource_prefix}-aar-alb',
-            vpc=vpc,
-            internet_facing=False,
-            vpc_subnets=ec2.SubnetSelection(
+            task_definition=task_definition,
+            task_subnets=ec2.SubnetSelection(
                 subnet_filters=[
                     ec2.SubnetFilter.by_ids(config['vpc']['subnets'])
                 ]
             ),
+            assign_public_ip=False,
             load_balancer_name=f'{resource_prefix}-aar-int-alb',
-            security_group=load_balancer_security_group
-        )
-
-        http_listener = internal_load_balancer.add_listener(
-            id=f'{resource_prefix}-aar-alb-80-listener',
-            port=80,
-            open=True
-        )
-
-        http_listener.add_action(f'{resource_prefix}-aar-alb-80-listener-action',
-            action=elbv2.ListenerAction.redirect(
-            port="443"
-        ))
-
-        https_listener = internal_load_balancer.add_listener(
-            id=f'{resource_prefix}-aar-alb-443-listener',
-            certificates=[listener_certificate],
-            port=443,
-            open=True
-        )
-
-        https_listener.add_action(
-            f'{resource_prefix}-aar-alb-443-listener-action',
-            action=elbv2.ListenerAction.redirect(
-                host=config['route53']['domain']
-            )
-        )
-
-        target_group = elbv2.ApplicationTargetGroup(
+            redirect_http=True,
+            listener_port=443,
+            certificate=acm.Certificate(
                 self,
-                id=f'{resource_prefix}-aar-cluster-tg',
-                target_group_name=f'{resource_prefix}-aar-cluster-tg',
-                target_type=elbv2.TargetType.IP,
-                port=5000,
-                vpc=vpc,
-                protocol=elbv2.ApplicationProtocol.HTTP,
-                health_check=elbv2.HealthCheck(
-                    enabled=True, path="/", port=str(5000)
-                ),
-                deregistration_delay=Duration.seconds(0),
-            )
-
-        # Add Fargate Instances to Target Group
-        target_group.add_target(service)
-
-        # Attach to ALB Listener
-        https_listener.add_target_groups(
-            id=f'{resource_prefix}-aar-cluster-tg-attachment',
-            target_groups=[target_group],
-            conditions=[elbv2.ListenerCondition.host_headers([config['route53']['domain']])],
-            priority=1,
+                id=f'{resource_prefix}-aar-certificate',
+                domain_name=config['route53']['domain'],
+                validation=acm.CertificateValidation.from_dns(
+                    hosted_zone=hosted_zone
+                )
+            ),
+            domain_name=config['route53']['domain'],
+            domain_zone=hosted_zone
         )
 
-        # R53 A Record to ALB
-        r53.ARecord(
-            self,
-            id=f'{resource_prefix}-hosted-zone-aar-a-record',
-            zone=hosted_zone,
-            target=r53.RecordTarget.from_alias(r53targets.LoadBalancerTarget(internal_load_balancer)),
-            record_name=config['route53']['domain']
+        # Load Balancer -> Select Subnets
+        fargate_service.load_balancer.vpc_subnets = ec2.SubnetSelection(
+            subnet_filters=[
+                ec2.SubnetFilter.by_ids(config['vpc']['subnets'])
+            ]
         )
