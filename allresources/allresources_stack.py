@@ -260,7 +260,7 @@ class AllresourcesStack(Stack):
         #       as the following options are currently missing:
         #
         #       * Unable to define working directory and entry point
-        #       * Unable to specify container runetime platform
+        #       * Unable to specify container runtime platform
         #
         fargate_service = ecs_patterns.ApplicationLoadBalancedFargateService(
             self,
@@ -295,3 +295,8 @@ class AllresourcesStack(Stack):
                 ec2.SubnetFilter.by_ids(config['vpc']['subnets'])
             ]
         )
+
+        fargate_service.target_group.health_check = elbv2.HealthCheck(
+            healthy_http_codes="200,302"
+        )
+    
